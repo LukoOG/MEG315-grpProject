@@ -4,6 +4,9 @@ from cycle.htc_model import analyze_htc
 from cycle.gas_cycle import brayton_cycle
 from cycle.steam_cycle import rankine_cycle
 from plots.diagrams import plot_ts, plot_hs
+import matplotlib.pyplot as plt
+
+
 
 st.markdown("""
 <style>
@@ -17,6 +20,12 @@ st.markdown('<p class="big-font">Combined Cycle Power Plant Results</p>', unsafe
 
 st.set_page_config(layout="wide")
 st.title("AD-HTC Fuel Enhanced Combined Cycle Simulator")
+
+tab1, tab2, tab3 = st.tabs([
+    "Analysis",
+    "Download Report",
+    "Cycle Schematic"
+])
 
 st.sidebar.header("AD Parameters")
 
@@ -51,82 +60,138 @@ m_steam = st.sidebar.number_input("Steam Mass Flow (kg/s)", value=5.0)
 
 # =========================
 # RUN ANALYSIS
-# =========================
-if st.button("Run Integrated Analysis"):
+    # =========================
+with tab1:
+    if st.button("Run Integrated Analysis"):
 
-    # --- AD ---
-    ad = analyze_ad(m_biomass, vs_fraction, methane_yield)
+        # --- AD ---
+        ad = analyze_ad(m_biomass, vs_fraction, methane_yield)
 
-    # --- HTC ---
-    htc = analyze_htc(
-        ad["digestate_mass"],
-        char_yield,
-        energy_density,
-        htc_eff
-    )
+        # --- HTC ---
+        htc = analyze_htc(
+            ad["digestate_mass"],
+            char_yield,
+            energy_density,
+            htc_eff
+        )
 
-    # --- Fuel Energy ---
-    fuel_energy = (
-        ad["biogas_energy"] +
-        htc["hydrochar_energy"]
-    )
+        # --- Fuel Energy ---
+        fuel_energy = (
+            ad["biogas_energy"] +
+            htc["hydrochar_energy"]
+        )
 
-    # --- Brayton ---
-    brayton_results = brayton_cycle(
-        T1, P1, rp, T3,
-        eta_c, eta_t_gas,
-        m_air
-    )
+        st.session_state.brayton_results = brayton_cycle(
+            T1, P1, rp, T3,
+            eta_c, eta_t_gas,
+            m_air
+        )
 
-    # --- Rankine ---
-    rankine_results = rankine_cycle(
-        P_boiler, T_superheat, P_cond,
-        eta_t_steam, eta_p,
-        m_steam
-    )
+        st.session_state.rankine_results = rankine_cycle(
+            P_boiler, T_superheat, P_cond,
+            eta_t_steam, eta_p,
+            m_steam
+        )
 
-    # --- Power Calculation ---
-    brayton_power = brayton_results["Net Work (kW)"]
+        # --- Power Calculation ---
+        brayton_power = st.session_state.brayton_results["Net Work (kW)"]
 
-    rankine_power = (
-        rankine_results["Turbine Work (kW)"] -
-        rankine_results["Pump Work (kW)"]
-    )
+        rankine_power = (
+            st.session_state.rankine_results["Turbine Work (kW)"] -
+            st.session_state.rankine_results["Pump Work (kW)"]
+        )
 
-    total_power = brayton_power + rankine_power
+        total_power = brayton_power + rankine_power
 
-    overall_eff = total_power / fuel_energy
+        overall_eff = total_power / fuel_energy
 
-    st.subheader("System Efficiencies")
-    # st.write("Brayton Efficiency:", brayton_results["Brayton Efficiency"])
-    # st.write("Rankine Efficiency:", rankine_results["Rankine Efficiency"])
-    # st.write("Overall System Efficiency:", overall_eff)
+        # st.subheader("System Efficiencies")
+        # st.write("Brayton Efficiency:", brayton_results["Brayton Efficiency"])
+        # st.write("Rankine Efficiency:", rankine_results["Rankine Efficiency"])
+        # st.write("Overall System Efficiency:", overall_eff)
+        
+        st.session_state.brayton_eff = st.session_state.brayton_results["Brayton Efficiency"] * 100
+        st.session_state.rankine_eff = st.session_state.rankine_results["Rankine Efficiency"] * 100
+
+        # st.metric("Brayton Efficiency (%)", f"{brayton_eff:.2f} %")
+        # st.metric("Rankine Efficiency (%)", f"{rankine_eff:.2f} %")
+        # st.metric("Overall System Efficiency (%)", f"{overall_eff:.2f} %")
+        
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.subheader("Brayton Cycle")
+            st.metric("Efficiency", f"{st.session_state.brayton_eff:.2f} %")
+            st.metric("Mass Flow Air", f"{st.session_state.brayton_results['Mass Flow Air (kg/s)']:.2f} kg/s")
+            st.metric("Net Work", f"{st.session_state.brayton_results['Net Work (kW)']:.2f} kW")
+
+        with col2:
+            st.subheader("Rankine Cycle")
+            st.metric("Efficiency", f"{st.session_state.rankine_eff:.2f} %")
+            st.metric("Mass Flow Steam", f"{st.session_state.rankine_results['Mass Flow Steam (kg/s)']:.2f} kg/s")
+            st.metric("Net Work", f"{rankine_power:.2f} kW")
+
+        with col3:
+            st.subheader("Overall System")
+            st.metric("Overall Efficiency", f"{overall_eff:.2f} %")
+            st.metric("Total Power Output", f"{total_power:.2f} kW")
+
+    st.subheader("Cycle Diagrams")
+
+    if "brayton_results" in st.session_state and "rankine_results" in st.session_state:
+
+        col1, col2 = st.columns(2)
+        col3, col4 = st.columns(2)
+
+        with col1:
+            st.pyplot(plot_ts(st.session_state.brayton_results))
+
+        with col2:
+            st.pyplot(plot_hs(st.session_state.rankine_results))
+
+    else:
+        st.info("Run the Integrated Analysis to generate diagrams.")
+
+with tab2:
+    st.subheader("Download Analysis Report")
+
+    if (
+        "brayton_results" in st.session_state and
+        "rankine_results" in st.session_state and
+        "brayton_eff" in st.session_state and
+        "rankine_eff" in st.session_state and
+        "overall_eff" in st.session_state
+    ):
+
+        report_text = f"""
+AD-HTC Combined Cycle Report
+----------------------------------
+
+Brayton Efficiency: {st.session_state.brayton_eff:.2f} %
+Rankine Efficiency: {st.session_state.rankine_eff:.2f} %
+Overall Efficiency: {st.session_state.overall_eff:.2f} %
+
+Air Mass Flow Rate: {st.session_state.brayton_results['Mass Flow Air (kg/s)']:.2f} kg/s
+Steam Mass Flow Rate: {st.session_state.rankine_results['Mass Flow Steam (kg/s)']:.2f} kg/s
+
+Total Power Output: {st.session_state.total_power:.2f} kW
+Hydrochar Energy: {st.session_state.hydrochar_energy:.2f} kW
+"""
+
+        st.download_button(
+            label="Download Report as .txt",
+            data=report_text,
+            file_name="AD_HTC_Cycle_Report.txt",
+            mime="text/plain"
+        )
+
+    else:
+        st.warning("Run the Integrated Analysis before downloading the report.")
     
-    brayton_eff = brayton_results["Brayton Efficiency"] * 100
-    rankine_eff = rankine_results["Rankine Efficiency"] * 100
+with tab3:
+    st.subheader("AD-HTC Combined Cycle Schematic")
 
-    st.metric("Brayton Efficiency (%)", f"{brayton_eff:.2f} %")
-    st.metric("Rankine Efficiency (%)", f"{rankine_eff:.2f} %")
-    st.metric("Overall System Efficiency (%)", f"{overall_eff:.2f} %")
-    
-    col1, col2, col3 = st.columns(3)
+    with open("schematic.html", "r", encoding="utf-8") as f:
+        html_data = f.read()
 
-    with col1:
-        st.subheader("Brayton Cycle")
-        st.metric("Efficiency", f"{brayton_eff:.2f} %")
-        st.metric("Mass Flow Air", f"{brayton_results['Mass Flow Air (kg/s)']:.2f} kg/s")
-        st.metric("Net Work", f"{brayton_results['Net Work (kW)']:.2f} kW")
-
-    with col2:
-        st.subheader("Rankine Cycle")
-        st.metric("Efficiency", f"{rankine_eff:.2f} %")
-        st.metric("Mass Flow Steam", f"{rankine_results['Mass Flow Steam (kg/s)']:.2f} kg/s")
-        st.metric("Net Work", f"{rankine_results['Rankine Net Work (kW)']:.2f} kW")
-
-    with col3:
-        st.subheader("Overall System")
-        st.metric("Overall Efficiency", f"{overall_eff:.2f} %")
-        st.metric("Total Power Output", f"{total_power:.2f} kW")
-
-    st.pyplot(plot_ts(brayton_results))
-    st.pyplot(plot_hs(rankine_results))
+    st.components.v1.html(html_data, height=700, scrolling=True)
