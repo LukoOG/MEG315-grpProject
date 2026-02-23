@@ -6,21 +6,14 @@
         body { background: linear-gradient(135deg, #0f1117 0%, #1a1d29 100%); overflow: hidden; font-family: 'Segoe UI', sans-serif; }
         svg { width: 100%; height: 100%; display: block; }
         
-        /* Box Styling */
         .box { stroke-width: 2; rx: 2; ry: 2; fill: #1a1d29; }
         .box-label { fill: #fff; font-weight: 600; font-size: 11px; text-anchor: middle; dominant-baseline: central; }
         .ext-label { fill: rgba(255, 255, 255, 0.9); font-size: 11px; font-weight: 500; }
         
-        /* Pipes & Markers */
         .pipe { fill: none; stroke-width: 2; stroke: #4e5d78; }
-        .pipe-active { fill: none; stroke-width: 2.5; stroke-linecap: round; }
-        
-        /* Animations */
-        .particle { opacity: 0.9; }
-        @keyframes spin { 0% { transform: rotate(0deg) } 100% { transform: rotate(360deg) } }
-        .fan { animation: spin 1.5s linear infinite; transform-origin: center; }
+        .particle { filter: blur(1px); }
 
-        /* Glow effects for specific systems */
+        /* Component Glows */
         .g-htc { filter: drop-shadow(0 0 5px #3b82f6); }
         .g-ad { filter: drop-shadow(0 0 5px #22c55e); }
         .g-power { filter: drop-shadow(0 0 8px #ef4444); }
@@ -32,12 +25,14 @@
             <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
                 <polygon points="0 0, 10 3.5, 0 7" fill="#8892b0" />
             </marker>
+            <circle id="p-green" r="3" fill="#22c55e" />
+            <circle id="p-blue" r="3" fill="#3b82f6" />
+            <circle id="p-cyan" r="3" fill="#22d3ee" />
+            <circle id="p-red" r="3" fill="#ef4444" />
+            <circle id="p-white" r="2.5" fill="#ffffff" opacity="0.6" />
         </defs>
 
-        <text x="50" y="100" class="ext-label">Biomass</text>
-        <text x="50" y="115" class="ext-label">Feedstock</text>
-        <path d="M100,107 L170,107" class="pipe" marker-end="url(#arrow)" />
-        
+        <path id="path-feed" d="M100,107 L170,107" class="pipe" marker-end="url(#arrow)" />
         <g class="g-feed">
             <rect x="170" y="40" width="80" height="130" class="box" stroke="#8892b0" />
             <text x="210" y="95" class="box-label">Biomass</text>
@@ -45,35 +40,33 @@
             <text x="210" y="125" class="box-label">Homogenizer</text>
         </g>
 
-        <path d="M250,107 L600,107" class="pipe" stroke="#22c55e" />
-        <path d="M600,107 L600,210 L640,210" class="pipe" stroke="#22c55e" marker-end="url(#arrow)" />
-        <text x="640" y="55" class="ext-label" text-anchor="middle" fill="#22c55e">Moisture-rich Biomass Feedstock</text>
+        <path id="path-rich" d="M250,107 L600,107 L600,210 L640,210" class="pipe" stroke="#22c55e" marker-end="url(#arrow)" />
+        <text x="425" y="95" class="ext-label" text-anchor="middle" fill="#22c55e">Moisture-rich Biomass Feedstock</text>
         
-        <path d="M210,170 L210,360 L340,360" class="pipe" stroke="#3b82f6" marker-end="url(#arrow)" />
-        <text x="270" y="380" class="ext-label" text-anchor="middle" fill="#3b82f6">Moisture-lean Biomass Feedstock</text>
+        <path id="path-lean" d="M210,170 L210,360 L340,360" class="pipe" stroke="#3b82f6" marker-end="url(#arrow)" />
+        <text x="210" y="385" class="ext-label" text-anchor="middle" fill="#3b82f6">Moisture-lean</text>
 
         <g class="g-htc">
             <rect x="340" y="125" width="80" height="60" class="box" stroke="#3b82f6" />
             <text x="380" y="155" class="box-label">Boiler</text>
-            
             <rect x="340" y="295" width="80" height="90" class="box" stroke="#3b82f6" />
             <text x="380" y="340" class="box-label">Reactor</text>
             
             <circle cx="270" cy="245" r="15" fill="none" stroke="#3b82f6" stroke-width="2" />
             <path d="M265,255 L275,245 L265,235 Z" fill="#3b82f6" />
             
-            <path d="M340,320 L270,320 L270,260" class="pipe" stroke="#3b82f6" />
-            <path d="M270,230 L270,170 L340,170" class="pipe" stroke="#3b82f6" marker-end="url(#arrow)" />
-            <path d="M420,140 L440,140 L440,320 L420,320" class="pipe" stroke="#3b82f6" marker-end="url(#arrow)" />
+            <path id="path-htc-up" d="M340,320 L270,320 L270,170 L340,170" class="pipe" stroke="#3b82f6" marker-end="url(#arrow)" />
+            <path id="path-htc-down" d="M420,140 L440,140 L440,320 L420,320" class="pipe" stroke="#3b82f6" marker-end="url(#arrow)" />
             <text x="380" y="245" class="ext-label" text-anchor="middle" fill="#3b82f6">HTC Steam Cycle</text>
         </g>
 
-        <path d="M380,385 L380,430" class="pipe" marker-end="url(#arrow)" />
-        <text x="380" y="450" class="ext-label" text-anchor="middle">Volatile Matters & Feedstock Waste</text>
+        <path id="path-waste" d="M380,385 L380,430" class="pipe" marker-end="url(#arrow)" />
+        <text x="380" y="455" class="ext-label" text-anchor="middle">Volatile Matters & Waste</text>
 
         <g class="g-ad">
             <rect x="640" y="170" width="60" height="80" class="box" stroke="#22c55e" />
             <text x="670" y="200" class="box-label">A</text>
+            <text x="670" y="210" class="box-label">—</text>
             <text x="670" y="220" class="box-label">D</text>
         </g>
 
@@ -83,36 +76,48 @@
             <text x="560" y="307" class="box-label">Biogas</text>
             <text x="560" y="320" class="box-label">Collector</text>
             
-            <path d="M420,360 L520,360 L520,340" class="pipe" stroke="#22d3ee" marker-end="url(#arrow)" />
-            <path d="M640,240 L560,240 L560,270" class="pipe" stroke="#22d3ee" marker-end="url(#arrow)" />
-            
-            <path d="M600,320 L750,320" class="pipe" stroke="#22d3ee" marker-end="url(#arrow)" />
-            <text x="760" y="315" class="ext-label" fill="#22d3ee">Biogas Distribution to</text>
-            <text x="760" y="330" class="ext-label" fill="#22d3ee">Building Envelopes</text>
+            <path id="path-htc-to-coll" d="M420,360 L520,360 L520,340" class="pipe" stroke="#22d3ee" marker-end="url(#arrow)" />
+            <path id="path-ad-to-coll" d="M640,240 L560,240 L560,270" class="pipe" stroke="#22d3ee" marker-end="url(#arrow)" />
+            <path id="path-distro" d="M600,320 L750,320" class="pipe" stroke="#22d3ee" marker-end="url(#arrow)" />
+            <text x="760" y="320" class="ext-label" fill="#22d3ee">Distribution</text>
         </g>
 
         <g class="g-power">
-            <path d="M480,470 L480,430 L640,430 L640,470" class="pipe" stroke="#ef4444" stroke-width="3" fill="none" />
-            <text x="560" y="555" class="box-label" fill="#ef4444" font-size="14">Biogas Combustion chamber</text>
-            <path d="M560,340 L560,430" class="pipe" stroke="#ef4444" marker-end="url(#arrow)" />
-
-            <line x1="300" y1="640" x2="820" y2="640" stroke="white" stroke-dasharray="8 4" opacity="0.5" />
-
-            <polygon points="350,600 460,630 460,670 350,700" fill="#1a1d29" stroke="#a855f7" stroke-width="2" transform="translate(0, -100)"/>
-            <text x="405" y="555" class="box-label">Compressor</text>
+            <path d="M480,470 L480,430 M640,430 L640,470" class="pipe" stroke="#ef4444" stroke-width="3" />
+            <text x="560" y="475" class="box-label" fill="#ef4444" font-size="12">Biogas Combustion chamber</text>
             
-            <polygon points="650,630 760,600 760,700 650,670" fill="#1a1d29" stroke="#facc15" stroke-width="2" transform="translate(0, -100)"/>
-            <text x="705" y="555" class="box-label">Turbine</text>
+            <path id="path-coll-to-comb" d="M560,340 L560,430" class="pipe" stroke="#ef4444" marker-end="url(#arrow)" />
+
+            <line x1="300" y1="540" x2="820" y2="540" stroke="white" stroke-dasharray="8 4" opacity="0.3" />
+
+            <polygon points="350,500 460,520 460,560 350,580" fill="#1a1d29" stroke="#a855f7" stroke-width="2" />
+            <text x="405" y="540" class="box-label">Compressor</text>
+            
+            <polygon points="650,520 760,500 760,580 650,560" fill="#1a1d29" stroke="#facc15" stroke-width="2" />
+            <text x="705" y="540" class="box-label">Turbine</text>
+            
+            <path id="path-comp-out" d="M460,540 L480,540 L480,470" class="pipe" stroke="#ef4444" marker-end="url(#arrow)" />
+            <path id="path-turb-in" d="M640,470 L640,540 L650,540" class="pipe" stroke="#ef4444" marker-end="url(#arrow)" />
         </g>
 
-        <path d="M350,650 L350,580" class="pipe" marker-end="url(#arrow)" transform="translate(0, -80)"/>
-        <text x="350" y="600" class="ext-label" text-anchor="middle">Air</text>
+        <path id="path-air" d="M350,630 L350,580" class="pipe" marker-end="url(#arrow)" />
+        <text x="350" y="645" class="ext-label" text-anchor="middle">Air</text>
         
-        <path d="M750,570 L750,650" class="pipe" marker-end="url(#arrow)" transform="translate(0, -80)"/>
-        <text x="750" y="600" class="ext-label" text-anchor="middle">Exhaust Gases</text>
+        <path id="path-exhaust" d="M750,580 L750,630" class="pipe" marker-end="url(#arrow)" />
+        <text x="750" y="645" class="ext-label" text-anchor="middle">Exhaust Gases</text>
 
-        <text x="560" y="620" class="ext-label" font-size="18" font-weight="bold" text-anchor="middle">AD-HTC Fuel-Enhanced Gas Power Cycle</text>
+        <use href="#p-green"><animateMotion dur="3s" repeatCount="indefinite" path="M100,107 L170,107" /></use>
+        <use href="#p-green"><animateMotion dur="5s" repeatCount="indefinite" path="M250,107 L600,107 L600,210 L640,210" /></use>
+        <use href="#p-blue"><animateMotion dur="4s" repeatCount="indefinite" path="M210,170 L210,360 L340,360" /></use>
+        <use href="#p-blue"><animateMotion dur="3s" repeatCount="indefinite" path="M340,320 L270,320 L270,170 L340,170" /></use>
+        <use href="#p-blue"><animateMotion dur="3s" repeatCount="indefinite" path="M420,140 L440,140 L440,320 L420,320" /></use>
+        <use href="#p-cyan"><animateMotion dur="3s" repeatCount="indefinite" path="M420,360 L520,360 L520,340" /></use>
+        <use href="#p-cyan"><animateMotion dur="3s" repeatCount="indefinite" path="M640,240 L560,240 L560,270" /></use>
+        <use href="#p-red"><animateMotion dur="2s" repeatCount="indefinite" path="M560,340 L560,430" /></use>
+        <use href="#p-white"><animateMotion dur="2s" repeatCount="indefinite" path="M350,630 L350,580" /></use>
+        <use href="#p-red"><animateMotion dur="2s" repeatCount="indefinite" path="M750,580 L750,630" /></use>
 
+        <text x="560" y="615" class="ext-label" font-size="16" font-weight="bold" text-anchor="middle">AD-HTC FUEL-ENHANCED GAS POWER CYCLE</text>
     </svg>
 </body>
 </html>
