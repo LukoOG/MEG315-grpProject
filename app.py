@@ -150,7 +150,7 @@ def main():
             rankine_results = rankine_cycle(
                 P_boiler, T_superheat, P_cond,
                 eta_t_steam, eta_p,
-                m_steam
+                brayton_results["Exhaust Heat Available (kW)"]
             )
 
             # --- Power Calculation ---
