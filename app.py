@@ -89,32 +89,32 @@ def main():
     st.sidebar.header("AD Parameters")
 
     m_biomass = st.sidebar.number_input("Biomass flow (kg/s)", value=5.0)
-    vs_fraction = st.sidebar.slider("Volatile Solids Fraction", 0.1, 1.0, 0.8)
-    methane_yield = st.sidebar.number_input("Methane yield (m3/kg VS)", value=0.35)
+    vs_fraction = st.sidebar.slider("Volatile Solids Fraction", 0.1, 1.0, 0.85)
+    methane_yield = st.sidebar.number_input("Methane yield (m3/kg VS)", value=0.4)
 
     st.sidebar.header("HTC Parameters")
 
-    char_yield = st.sidebar.slider("Hydrochar Yield Fraction", 0.3, 0.8, 0.6)
-    htc_eff = st.sidebar.slider("HTC Energy Efficiency", 0.5, 1.0, 0.85)
-    energy_density = st.sidebar.slider("Energy Density Factor", 1.0, 2.0, 1.5)
+    char_yield = st.sidebar.slider("Hydrochar Yield Fraction", 0.3, 0.8, 0.65)
+    htc_eff = st.sidebar.slider("HTC Energy Efficiency", 0.5, 1.0, 0.9)
+    energy_density = st.sidebar.slider("Energy Density Factor", 1.0, 2.0, 1.6)
 
     st.sidebar.header("Brayton Parameters")
 
     T1 = st.sidebar.number_input("Compressor Inlet Temp (K)", value=300.0)
     P1 = st.sidebar.number_input("Compressor Inlet Pressure (kPa)", value=100.0)
-    rp = st.sidebar.number_input("Pressure Ratio", value=8.0)
-    T3 = st.sidebar.number_input("Turbine Inlet Temp (K)", value=1200.0)
-    eta_c = st.sidebar.slider("Compressor Efficiency", 0.6, 1.0, 0.85)
-    eta_t_gas = st.sidebar.slider("Gas Turbine Efficiency", 0.6, 1.0, 0.9)
+    rp = st.sidebar.number_input("Pressure Ratio", value=14.0)
+    T3 = st.sidebar.number_input("Turbine Inlet Temp (K)", value=1400.0)
+    eta_c = st.sidebar.slider("Compressor Efficiency", 0.6, 1.0, 0.88)
+    eta_t_gas = st.sidebar.slider("Gas Turbine Efficiency", 0.6, 1.0, 0.92)
     m_air = st.sidebar.number_input("Air Mass Flow (kg/s)", value=10.0)
 
     st.sidebar.header("Rankine Parameters")
 
-    P_boiler = st.sidebar.number_input("Boiler Pressure (Pa)", value=8e6)
-    T_superheat = st.sidebar.number_input("Superheat Temp (K)", value=773.0)
-    P_cond = st.sidebar.number_input("Condenser Pressure (Pa)", value=10000.0)
+    P_boiler = st.sidebar.number_input("Boiler Pressure (Pa)", value=10e6)
+    T_superheat = st.sidebar.number_input("Superheat Temp (K)", value=823.0)
+    P_cond = st.sidebar.number_input("Condenser Pressure (Pa)", value=8000.0)
     eta_t_steam = st.sidebar.slider("Steam Turbine Efficiency", 0.6, 1.0, 0.9)
-    eta_p = st.sidebar.slider("Pump Efficiency", 0.6, 1.0, 0.85)
+    eta_p = st.sidebar.slider("Pump Efficiency", 0.6, 1.0, 0.88)
     m_steam = st.sidebar.number_input("Steam Mass Flow (kg/s)", value=5.0)
 
     # =========================
@@ -134,17 +134,18 @@ def main():
                 htc_eff
             )
 
-            # --- Fuel Energy ---
-            fuel_energy = (
-                ad["biogas_energy"] +
-                htc["hydrochar_energy"]
-            )
 
             brayton_results = brayton_cycle(
                 T1, P1, rp, T3,
                 eta_c, eta_t_gas,
                 m_air
             )
+            # --- Fuel Energy ---
+            # fuel_energy = (
+            #     ad["biogas_energy"] +
+            #     htc["hydrochar_energy"]
+            # )
+            fuel_energy = brayton_results["Heat Input (kW)"]
 
             rankine_results = rankine_cycle(
                 P_boiler, T_superheat, P_cond,
@@ -162,7 +163,7 @@ def main():
 
             total_power = brayton_power + rankine_power
 
-            overall_eff = total_power / fuel_energy
+            overall_eff = total_power / fuel_energy * 100
 
             # st.subheader("System Efficiencies")
             # st.write("Brayton Efficiency:", brayton_results["Brayton Efficiency"])
